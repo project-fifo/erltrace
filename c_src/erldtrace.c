@@ -195,34 +195,6 @@ static ERL_NIF_TERM probe_desc(ErlNifEnv* env, dtrace_probedesc_t *d) {
 			  enif_make_atom(env, d->dtpd_name));
 }
 
-
-/*static int
-chew(const dtrace_probedata_t *data, void *arg)
-{
-
-  dtrace_handle_s *handle = (dtrace_handle_s *) arg;
-
-#ifdef DEBUG
-  fprintf(stderr, "chew - entry\n\r");
-#endif
-
-  ERL_NIF_TERM res = enif_make_tuple2(handle->env,
-				      enif_make_atom(handle->env, "probe"),
-				      probe_desc(handle->env, data->dtpda_pdesc));
-
-  if (!handle->reply){
-    handle->reply = enif_make_list1(handle->env, res);
-  } else {
-    handle->reply = enif_make_list_cell(handle->env, res, handle->reply);
-  };
-
-#ifdef DEBUG
-  fprintf(stderr, "chew - done\n\r");
-#endif
-
-  return (DTRACE_CONSUME_THIS);
-  }*/
-
 static int
 chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
 {
@@ -722,7 +694,7 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   handle->env = env;
   handle->reply = 0;
 
-  dtrace_work(handle->handle, NULL, /*chew*/ NULL, chewrec, handle);
+  dtrace_work(handle->handle, NULL, NULL, chewrec, handle);
 
   if (handle->reply) {
     ERL_NIF_TERM rev;
@@ -779,7 +751,6 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
     return dtrace_err(env, handle);
   }
 
-  // Instead of print -> we'll walk...dtrace_aggregate_print(handle, stdout, NULL);
   if (dtrace_aggregate_walk(handle->handle, walk, handle) != 0) {
     return dtrace_err(env, handle);
   }
