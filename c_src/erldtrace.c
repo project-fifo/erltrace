@@ -73,6 +73,16 @@ static boolean_t valid(const dtrace_recdesc_t *rec)
   }
 }
 
+static ERL_NIF_TERM dtrace_err(ErlNifEnv* env, dtrace_handle_s *handle) {
+  return enif_make_tuple2(env,
+			  enif_make_atom(env, "error"),
+			  enif_make_tuple2(env,
+					   enif_make_atom(env, "dtrace"),
+					   enif_make_string(env,
+							    dtrace_errmsg(NULL, handle->err),
+							    ERL_NIF_LATIN1)));
+};
+
 static ERL_NIF_TERM
 record(dtrace_hdl_t *dtp, ErlNifEnv* env, const dtrace_recdesc_t *rec, caddr_t addr)
 {
@@ -350,7 +360,6 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
 
   int i;
 
-
   for (i = 1; i < aggdesc->dtagd_nrecs - 1; i++) {
     const dtrace_recdesc_t *rec = &aggdesc->dtagd_rec[i];
     caddr_t addr = agg->dtada_data + rec->dtrd_offset;
@@ -469,10 +478,7 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
   }
 
   res =  enif_make_tuple3(env,
-			  enif_make_tuple2(env,
-					   enif_make_atom(env, "aggr"),
-					   aggrfun),
-			  //			  enif_make_int64(env, aggdesc->dtagd_varid),
+			  aggrfun,
 			  key,
 			  res);
   if (!handle->reply){
@@ -483,42 +489,6 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
 
   return (DTRACE_AGGWALK_REMOVE);
 }
-/*
-static int
-walk(const dtrace_aggdata_t *data, void *arg)
-{
-	dtrace_aggdesc_t *aggdesc = data->dtada_desc;
-	dtrace_handle_s *handle = (dtrace_handle_s *) arg;
-	ERL_NIF_TERM res;
-	dtrace_recdesc_t *nrec, *irec;
-	char *name;
-	int32_t *instance;
-	static const dtrace_aggdata_t *count;
-
-	if (count == NULL) {
-		count = data;
-		return (DTRACE_AGGWALK_NEXT);
-	}
-
-	nrec = &aggdesc->dtagd_rec[1];
-	irec = &aggdesc->dtagd_rec[2];
-
-	name = data->dtada_data + nrec->dtrd_offset;
-	instance = (int32_t *) (data->dtada_data + irec->dtrd_offset);
-
-	res = enif_make_tuple3(handle->env,
-			       enif_make_atom(handle->env, "aggr"),
-			       enif_make_string(handle->env, name, ERL_NIF_LATIN1),
-			       enif_make_int(handle->env, *instance));
-
-	if (!handle->reply){
-	  handle->reply = enif_make_list1(handle->env, res);
-	} else {
-	  handle->reply = enif_make_list_cell(handle->env, res, handle->reply);
-	};
-
-	return (DTRACE_AGGWALK_NEXT);
-	}*/
 
 static void handle_dtor(ErlNifEnv* env, void* handle) {
   dtrace_close(((dtrace_handle_s*)handle)->handle);
@@ -621,9 +591,7 @@ static ERL_NIF_TERM compile_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   handle->prog = dtrace_program_strcompile(handle->handle, script, DTRACE_PROBESPEC_NAME, DTRACE_C_ZDEFS, 0, NULL);
   if (handle->prog == NULL) {
     fprintf(stderr, "Unable to compile d script: %s\n", dtrace_errmsg(NULL, handle->err));
-    return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
+    return dtrace_err(env, handle);
   };
   dtrace_program_exec(handle->handle, handle->prog, &(handle->info));
   return enif_make_atom(env, "ok");
@@ -717,13 +685,23 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   handle->env = env;
   handle->reply = 0;
 
-  if (dtrace_aggregate_snap(handle->handle) != 0)
-    printf("failed to add to aggregate\n");
+  fprintf(stderr, "walk: 1\n\r");
+
+  if (dtrace_status(handle->handle) == -1) {
+    return dtrace_err(env, handle);
+  }
+
+
+  if (dtrace_aggregate_snap(handle->handle) != 0) {
+    return dtrace_err(env, handle);
+  }
+  fprintf(stderr, "walk: 2\n\r");
 
   // Instead of print -> we'll walk...dtrace_aggregate_print(handle, stdout, NULL);
-  if (dtrace_aggregate_walk_valsorted(handle->handle, walk, handle) != 0) {
-    fprintf(stderr, "Unable to append walker: %s\n", dtrace_errmsg(NULL, handle->err));
+  if (dtrace_aggregate_walk(handle->handle, walk, handle) != 0) {
+    return dtrace_err(env, handle);
   }
+  fprintf(stderr, "walk: 3\n\r");
 
   if (handle->reply) {
     return handle->reply;
