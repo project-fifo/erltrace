@@ -241,7 +241,7 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
 
   if (!valid(rec)) {
 #ifdef DEBUG
-    fprintf(stderr, "chewrec - invalid record\n\r");
+    fprintf(stderr, "chewrec - invalid record: %d\n\r", rec->dtrd_action);
 #endif
     return (DTRACE_CONSUME_ABORT);
   }
