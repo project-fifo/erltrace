@@ -459,6 +459,7 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
       };
     }
 
+    free(ranges);
     res = lquantize;
     break;
   }
