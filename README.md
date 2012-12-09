@@ -32,6 +32,10 @@ erltrace:consume(Handle).
 erltrace:walk(Handle).
 ```
 
+known problems
+--------------
+There is a problem in OS X that causes invalid access when there are printf elements in the trace, it works fine under Solaris So.
+
 credits
 -------
 I borrowed heaviely from the code of [node-libdtrace](https://github.com/bcantrill/node-libdtrace) and [python-dtrace](https://github.com/tmetsch/python-dtrace).
