@@ -200,12 +200,10 @@ static int
 chew(const dtrace_probedata_t *data, void *arg)
 {
 
-  processorid_t cpu = data->dtpda_cpu;
   dtrace_handle_s *handle = (dtrace_handle_s *) arg;
-  ERL_NIF_TERM res = enif_make_tuple3(handle->env,
-				      enif_make_atom(handle->env, "chew"),
-				      probe_desc(handle->env, data->dtpda_pdesc),
-				      enif_make_int(handle->env, cpu));
+  ERL_NIF_TERM res = enif_make_tuple2(handle->env,
+				      enif_make_atom(handle->env, "probe"),
+				      probe_desc(handle->env, data->dtpda_pdesc));
 
 
   if (!handle->reply){
@@ -230,10 +228,9 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
     return (DTRACE_CONSUME_ABORT);
   }
 
-  ERL_NIF_TERM res = enif_make_tuple4(handle->env,
-				      enif_make_atom(handle->env, "chewrec"),
+  ERL_NIF_TERM res = enif_make_tuple3(handle->env,
+				      enif_make_atom(handle->env, "probe"),
 				      probe_desc(handle->env, data->dtpda_pdesc),
-				      action(handle->env, rec),
 				      record(handle->handle, handle->env, rec, data->dtpda_data));
   if (!handle->reply){
     handle->reply = enif_make_list1(handle->env, res);
@@ -552,18 +549,14 @@ static ERL_NIF_TERM open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   handle->handle = dtrace_open(DTRACE_VERSION, 0, &(handle->err));
 
   if (handle->handle == NULL) { // if the handle could not be generated.
-    return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
+    return dtrace_err(env, handle);
   };
 
   dtrace_setopt(handle->handle, "bufsize", "4m");
   dtrace_setopt(handle->handle, "aggsize", "4m");
 
   if (dtrace_handle_buffered(handle->handle, &buffered, handle) == -1) {
-    return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
+    return dtrace_err(env, handle);
   }
 
   return  enif_make_tuple2(env,
@@ -593,9 +586,7 @@ static ERL_NIF_TERM setopt_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
   }
 
   if (dtrace_setopt(handle->handle, opt, val) != 0) {
-    return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
+    return dtrace_err(env, handle);
 
   }
   return enif_make_atom(env, "ok");
@@ -689,7 +680,6 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   }
   handle->env = env;
   handle->reply = 0;
-  dtrace_sleep(handle->handle);
 
   dtrace_work(handle->handle, NULL, chew, chewrec, handle);
 
@@ -716,14 +706,27 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 			    enif_make_atom(env, "error"),
 			    enif_make_atom(env, "no_prog"));
   }
+
   handle->env = env;
   handle->reply = 0;
 
   int status = dtrace_status(handle->handle);
   switch(status) {
-  case DTRACE_STATUS_EXITED:  {return enif_make_atom(env, "exited");};
-  case DTRACE_STATUS_FILLED:  {return enif_make_atom(env, "filled");};
-  case DTRACE_STATUS_STOPPED: {return enif_make_atom(env, "stopped");};
+  case DTRACE_STATUS_EXITED:  {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "exited"));
+  };
+  case DTRACE_STATUS_FILLED:  {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "filled"));
+  };
+  case DTRACE_STATUS_STOPPED: {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "stopped"));
+  };
   case -1: {return dtrace_err(env, handle);};
   }
 
@@ -738,7 +741,9 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   }
 
   if (handle->reply) {
-    return handle->reply;
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "ok"),
+			    handle->reply);
   };
 
   return enif_make_atom(env, "ok");
