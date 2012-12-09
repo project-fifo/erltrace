@@ -552,7 +552,6 @@ static ERL_NIF_TERM open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   handle->handle = dtrace_open(DTRACE_VERSION, 0, &(handle->err));
 
   if (handle->handle == NULL) { // if the handle could not be generated.
-    fprintf(stderr, "Unable to get hold of an dtrace handle: %s\n", dtrace_errmsg(NULL, handle->err));
     return enif_make_tuple2(env,
 			    enif_make_atom(env, "error"),
 			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
@@ -594,7 +593,6 @@ static ERL_NIF_TERM setopt_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
   }
 
   if (dtrace_setopt(handle->handle, opt, val) != 0) {
-    fprintf(stderr, "Unable to set bufsize option: %s\n", dtrace_errmsg(NULL, handle->err));
     return enif_make_tuple2(env,
 			    enif_make_atom(env, "error"),
 			    enif_make_string(env, dtrace_errmsg(NULL, handle->err), ERL_NIF_LATIN1));
@@ -627,7 +625,6 @@ static ERL_NIF_TERM compile_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
 
   handle->prog = dtrace_program_strcompile(handle->handle, script, DTRACE_PROBESPEC_NAME, DTRACE_C_ZDEFS, 0, NULL);
   if (handle->prog == NULL) {
-    fprintf(stderr, "Unable to compile d script: %s\n", dtrace_errmsg(NULL, handle->err));
     return dtrace_err(env, handle);
   };
   dtrace_program_exec(handle->handle, handle->prog, &(handle->info));
