@@ -196,7 +196,7 @@ static ERL_NIF_TERM probe_desc(ErlNifEnv* env, dtrace_probedesc_t *d) {
 }
 
 
-static int
+/*static int
 chew(const dtrace_probedata_t *data, void *arg)
 {
 
@@ -221,7 +221,7 @@ chew(const dtrace_probedata_t *data, void *arg)
 #endif
 
   return (DTRACE_CONSUME_THIS);
-}
+  }*/
 
 static int
 chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
@@ -722,7 +722,7 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   handle->env = env;
   handle->reply = 0;
 
-  dtrace_work(handle->handle, NULL, chew, chewrec, handle);
+  dtrace_work(handle->handle, NULL, /*chew*/ NULL, chewrec, handle);
 
   if (handle->reply) {
     return handle->reply;
