@@ -725,7 +725,10 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   dtrace_work(handle->handle, NULL, /*chew*/ NULL, chewrec, handle);
 
   if (handle->reply) {
-    return handle->reply;
+    ERL_NIF_TERM rev;
+    // we've to reverse the results to have a correctly ordered list of events.
+    enif_make_reverse_list(env, handle->reply, &rev);
+    return rev;
   };
 
   return enif_make_atom(env, "ok");
