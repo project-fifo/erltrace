@@ -56,6 +56,42 @@ typedef struct bufhandler_env {
 } bufhandler_env_t;
 
 
+ERL_NIF_TERM
+action(ErlNifEnv* env, const dtrace_recdesc_t *rec)
+{
+  dtrace_actkind_t act = rec->dtrd_action;
+
+  switch (act) {
+  case DTRACEACT_NONE: {return enif_make_string(env, "<none>", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_DIFEXPR: {return enif_make_string(env, "<DIF expression>", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_EXIT: {return enif_make_string(env, "exit()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_PRINTF: {return enif_make_string(env, "printf()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_PRINTA: {return enif_make_string(env, "printa()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_LIBACT: {return enif_make_string(env, "<library action>", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_USTACK: {return enif_make_string(env, "ustack()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_JSTACK: {return enif_make_string(env, "jstack()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_USYM: {return enif_make_string(env, "usym()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_UMOD: {return enif_make_string(env, "umod()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_UADDR: {return enif_make_string(env, "uaddr()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_STOP: {return enif_make_string(env, "stop()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_RAISE: {return enif_make_string(env, "raise()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_SYSTEM: {return enif_make_string(env, "system()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_FREOPEN: {return enif_make_string(env, "freopen()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_STACK: {return enif_make_string(env, "stack()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_SYM: {return enif_make_string(env, "sym()", ERL_NIF_LATIN1); break;}
+  case DTRACEACT_MOD: {return enif_make_string(env, "mod()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_COUNT: {return enif_make_string(env, "count()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_MIN: {return enif_make_string(env, "min()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_MAX: {return enif_make_string(env, "max()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_AVG: {return enif_make_string(env, "avg()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_SUM: {return enif_make_string(env, "sum()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_STDDEV: {return enif_make_string(env, "stddev()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_QUANTIZE: {return enif_make_string(env, "quantize()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_LQUANTIZE: {return enif_make_string(env, "lquantize()", ERL_NIF_LATIN1); break;}
+  case DTRACEAGG_LLQUANTIZE: {return enif_make_string(env, "llquantize()", ERL_NIF_LATIN1); break;}
+  default: {return enif_make_string(env, "<unknown>", ERL_NIF_LATIN1);}
+  };
+}
 
 static boolean_t valid(const dtrace_recdesc_t *rec)
 {
@@ -194,9 +230,10 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
     return (DTRACE_CONSUME_ABORT);
   }
 
-  ERL_NIF_TERM res = enif_make_tuple3(handle->env,
+  ERL_NIF_TERM res = enif_make_tuple4(handle->env,
 				      enif_make_atom(handle->env, "chewrec"),
 				      probe_desc(handle->env, data->dtpda_pdesc),
+				      action(handle->env, rec),
 				      record(handle->handle, handle->env, rec, data->dtpda_data));
   if (!handle->reply){
     handle->reply = enif_make_list1(handle->env, res);
@@ -685,23 +722,23 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   handle->env = env;
   handle->reply = 0;
 
-  fprintf(stderr, "walk: 1\n\r");
-
-  if (dtrace_status(handle->handle) == -1) {
-    return dtrace_err(env, handle);
+  int status = dtrace_status(handle->handle);
+  switch(status) {
+  case DTRACE_STATUS_EXITED:  {return enif_make_atom(env, "exited");};
+  case DTRACE_STATUS_FILLED:  {return enif_make_atom(env, "filled");};
+  case DTRACE_STATUS_STOPPED: {return enif_make_atom(env, "stopped");};
+  case -1: {return dtrace_err(env, handle);};
   }
 
 
   if (dtrace_aggregate_snap(handle->handle) != 0) {
     return dtrace_err(env, handle);
   }
-  fprintf(stderr, "walk: 2\n\r");
 
   // Instead of print -> we'll walk...dtrace_aggregate_print(handle, stdout, NULL);
   if (dtrace_aggregate_walk(handle->handle, walk, handle) != 0) {
     return dtrace_err(env, handle);
   }
-  fprintf(stderr, "walk: 3\n\r");
 
   if (handle->reply) {
     return handle->reply;
