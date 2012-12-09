@@ -201,16 +201,24 @@ chew(const dtrace_probedata_t *data, void *arg)
 {
 
   dtrace_handle_s *handle = (dtrace_handle_s *) arg;
+
+#ifdef DEBUG
+  fprintf(stderr, "chew - entry\n\r");
+#endif
+
   ERL_NIF_TERM res = enif_make_tuple2(handle->env,
 				      enif_make_atom(handle->env, "probe"),
 				      probe_desc(handle->env, data->dtpda_pdesc));
-
 
   if (!handle->reply){
     handle->reply = enif_make_list1(handle->env, res);
   } else {
     handle->reply = enif_make_list_cell(handle->env, res, handle->reply);
   };
+
+#ifdef DEBUG
+  fprintf(stderr, "chew - done\n\r");
+#endif
 
   return (DTRACE_CONSUME_THIS);
 }
@@ -220,11 +228,21 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
 {
   dtrace_handle_s *handle = (dtrace_handle_s *) arg;
 
+#ifdef DEBUG
+  fprintf(stderr, "chewrec - entry\n\r");
+#endif
+
   if (rec == NULL) {
+#ifdef DEBUG
+    fprintf(stderr, "chewrec - no record\n\r");
+#endif
     return (DTRACE_CONSUME_NEXT);
   }
 
   if (!valid(rec)) {
+#ifdef DEBUG
+    fprintf(stderr, "chewrec - invalid record\n\r");
+#endif
     return (DTRACE_CONSUME_ABORT);
   }
 
@@ -238,6 +256,10 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
     handle->reply = enif_make_list_cell(handle->env, res, handle->reply);
   };
 
+#ifdef DEBUG
+    fprintf(stderr, "chewrec - done\n\r");
+#endif
+
   return (DTRACE_CONSUME_THIS);
 }
 
@@ -248,8 +270,16 @@ buffered(const dtrace_bufdata_t *bufdata, void *arg)
   dtrace_probedata_t *data = bufdata->dtbda_probe;
   const dtrace_recdesc_t *rec = bufdata->dtbda_recdesc;
 
-  if (rec == NULL || rec->dtrd_action != DTRACEACT_PRINTF)
+#ifdef DEBUG
+  fprintf(stderr, "buffered - entry\n\r");
+#endif
+
+  if (rec == NULL || rec->dtrd_action != DTRACEACT_PRINTF) {
+#ifdef DEBUG
+    fprintf(stderr, "buffered - skipping\n\r");
+#endif
     return (DTRACE_HANDLE_OK);
+  }
 
   ERL_NIF_TERM res = enif_make_tuple3(handle->env,
 				      enif_make_atom(handle->env, "printf"),
@@ -260,6 +290,10 @@ buffered(const dtrace_bufdata_t *bufdata, void *arg)
   } else {
     handle->reply = enif_make_list_cell(handle->env, res, handle->reply);
   };
+
+#ifdef DEBUG
+  fprintf(stderr, "buffered - done\n\r");
+#endif
 
   return (DTRACE_HANDLE_OK);
 }
@@ -745,7 +779,6 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 			    enif_make_atom(env, "ok"),
 			    handle->reply);
   };
-
   return enif_make_atom(env, "ok");
 }
 

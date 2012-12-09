@@ -38,6 +38,10 @@
 init() ->
     ok = erlang:load_nif("priv/erltrace_drv", 0).
 
+
+-spec script(Script::string()) -> {ok, Handle::dtrace_handle()} |
+		dtrace_error().
+
 script(Script) ->
     {ok, H} = open(),
     ok = compile(H, Script),
