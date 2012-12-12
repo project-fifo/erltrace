@@ -691,8 +691,29 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
 			    enif_make_atom(env, "error"),
 			    enif_make_atom(env, "no_prog"));
   }
+
   handle->env = env;
   handle->reply = 0;
+
+  int status = dtrace_status(handle->handle);
+  switch(status) {
+  case DTRACE_STATUS_EXITED:  {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "exited"));
+  };
+  case DTRACE_STATUS_FILLED:  {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "filled"));
+  };
+  case DTRACE_STATUS_STOPPED: {
+    return enif_make_tuple2(env,
+			    enif_make_atom(env, "error"),
+			    enif_make_atom(env, "stopped"));
+  };
+  case -1: {return dtrace_err(env, handle);};
+  }
 
   dtrace_work(handle->handle, NULL, NULL, chewrec, handle);
 
