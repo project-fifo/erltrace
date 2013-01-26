@@ -11,32 +11,32 @@
  */
 #ifndef DTRACEAGG_LLQUANTIZE
 
-#define	DTRACEAGG_LLQUANTIZE			(DTRACEACT_AGGREGATION + 9)
+#define DTRACEAGG_LLQUANTIZE            (DTRACEACT_AGGREGATION + 9)
 
-#define	DTRACE_LLQUANTIZE_FACTORSHIFT		48
-#define	DTRACE_LLQUANTIZE_FACTORMASK		((uint64_t)UINT16_MAX << 48)
-#define	DTRACE_LLQUANTIZE_LOWSHIFT		32
-#define	DTRACE_LLQUANTIZE_LOWMASK		((uint64_t)UINT16_MAX << 32)
-#define	DTRACE_LLQUANTIZE_HIGHSHIFT		16
-#define	DTRACE_LLQUANTIZE_HIGHMASK		((uint64_t)UINT16_MAX << 16)
-#define	DTRACE_LLQUANTIZE_NSTEPSHIFT		0
-#define	DTRACE_LLQUANTIZE_NSTEPMASK		UINT16_MAX
+#define DTRACE_LLQUANTIZE_FACTORSHIFT       48
+#define DTRACE_LLQUANTIZE_FACTORMASK        ((uint64_t)UINT16_MAX << 48)
+#define DTRACE_LLQUANTIZE_LOWSHIFT      32
+#define DTRACE_LLQUANTIZE_LOWMASK       ((uint64_t)UINT16_MAX << 32)
+#define DTRACE_LLQUANTIZE_HIGHSHIFT     16
+#define DTRACE_LLQUANTIZE_HIGHMASK      ((uint64_t)UINT16_MAX << 16)
+#define DTRACE_LLQUANTIZE_NSTEPSHIFT        0
+#define DTRACE_LLQUANTIZE_NSTEPMASK     UINT16_MAX
 
-#define DTRACE_LLQUANTIZE_FACTOR(x)             \
-	(uint16_t)(((x) & DTRACE_LLQUANTIZE_FACTORMASK) >> \
-	DTRACE_LLQUANTIZE_FACTORSHIFT)
+#define DTRACE_LLQUANTIZE_FACTOR(x)                     \
+  (uint16_t)(((x) & DTRACE_LLQUANTIZE_FACTORMASK) >>    \
+             DTRACE_LLQUANTIZE_FACTORSHIFT)
 
-#define DTRACE_LLQUANTIZE_LOW(x)                \
-        (uint16_t)(((x) & DTRACE_LLQUANTIZE_LOWMASK) >> \
-        DTRACE_LLQUANTIZE_LOWSHIFT)
+#define DTRACE_LLQUANTIZE_LOW(x)                    \
+  (uint16_t)(((x) & DTRACE_LLQUANTIZE_LOWMASK) >>   \
+             DTRACE_LLQUANTIZE_LOWSHIFT)
 
-#define DTRACE_LLQUANTIZE_HIGH(x)               \
-        (uint16_t)(((x) & DTRACE_LLQUANTIZE_HIGHMASK) >> \
-        DTRACE_LLQUANTIZE_HIGHSHIFT)
+#define DTRACE_LLQUANTIZE_HIGH(x)                   \
+  (uint16_t)(((x) & DTRACE_LLQUANTIZE_HIGHMASK) >>  \
+             DTRACE_LLQUANTIZE_HIGHSHIFT)
 
-#define DTRACE_LLQUANTIZE_NSTEP(x)              \
-        (uint16_t)(((x) & DTRACE_LLQUANTIZE_NSTEPMASK) >> \
-        DTRACE_LLQUANTIZE_NSTEPSHIFT)
+#define DTRACE_LLQUANTIZE_NSTEP(x)                  \
+  (uint16_t)(((x) & DTRACE_LLQUANTIZE_NSTEPMASK) >> \
+             DTRACE_LLQUANTIZE_NSTEPSHIFT)
 #endif
 
 ErlNifResourceType* dtrace_handle;
@@ -111,12 +111,12 @@ static boolean_t valid(const dtrace_recdesc_t *rec)
 
 static ERL_NIF_TERM dtrace_err(ErlNifEnv* env, dtrace_handle_s *handle) {
   return enif_make_tuple2(env,
-			  enif_make_atom(env, "error"),
-			  enif_make_tuple2(env,
-					   enif_make_atom(env, "dtrace"),
-					   enif_make_string(env,
-							    dtrace_errmsg(NULL, handle->err),
-							    ERL_NIF_LATIN1)));
+                          enif_make_atom(env, "error"),
+                          enif_make_tuple2(env,
+                                           enif_make_atom(env, "dtrace"),
+                                           enif_make_string(env,
+                                                            dtrace_errmsg(NULL, handle->err),
+                                                            ERL_NIF_LATIN1)));
 };
 
 static ERL_NIF_TERM
@@ -160,25 +160,25 @@ record(dtrace_hdl_t *dtp, ErlNifEnv* env, const dtrace_recdesc_t *rec, caddr_t a
     }
 
     if (rec->dtrd_action == DTRACEACT_MOD ||
-	rec->dtrd_action == DTRACEACT_UMOD) {
+        rec->dtrd_action == DTRACEACT_UMOD) {
       /*
        * If we're looking for the module name, we'll
        * return everything to the left of the left-most
        * tick -- or "<undefined>" if there is none.
        */
       if ((tick = strchr(buf, '`')) == NULL)
-	return enif_make_atom(env, "undefined");
+        return enif_make_atom(env, "undefined");
 
       *tick = '\0';
     } else if (rec->dtrd_action == DTRACEACT_SYM ||
-              rec->dtrd_action == DTRACEACT_USYM) {
+               rec->dtrd_action == DTRACEACT_USYM) {
       /*
        * If we're looking for the symbol name, we'll
        * return everything to the left of the right-most
        * plus sign (if there is one).
        */
       if ((plus = strrchr(buf, '+')) != NULL)
-	*plus = '\0';
+        *plus = '\0';
     }
     return enif_make_string(env, buf, ERL_NIF_LATIN1);
   default:
@@ -189,10 +189,10 @@ record(dtrace_hdl_t *dtp, ErlNifEnv* env, const dtrace_recdesc_t *rec, caddr_t a
 
 static ERL_NIF_TERM probe_desc(ErlNifEnv* env, dtrace_probedesc_t *d) {
   return enif_make_tuple4(env,
-			  enif_make_atom(env, d->dtpd_provider),
-			  enif_make_atom(env, d->dtpd_mod),
-			  enif_make_atom(env, d->dtpd_func),
-			  enif_make_atom(env, d->dtpd_name));
+                          enif_make_atom(env, d->dtpd_provider),
+                          enif_make_atom(env, d->dtpd_mod),
+                          enif_make_atom(env, d->dtpd_func),
+                          enif_make_atom(env, d->dtpd_name));
 }
 
 static int
@@ -213,7 +213,7 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
 
   if (!valid(rec)) {
     if (rec->dtrd_action == DTRACEACT_PRINTF ||
-	rec->dtrd_action == DTRACEACT_PRINTA) {
+        rec->dtrd_action == DTRACEACT_PRINTA) {
 #ifdef DEBUG
       fprintf(stderr, "chewrec - next for printf.\n\r");
 #endif
@@ -226,9 +226,9 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
   }
 
   ERL_NIF_TERM res = enif_make_tuple3(handle->env,
-				      enif_make_atom(handle->env, "probe"),
-				      probe_desc(handle->env, data->dtpda_pdesc),
-				      record(handle->handle, handle->env, rec, data->dtpda_data));
+                                      enif_make_atom(handle->env, "probe"),
+                                      probe_desc(handle->env, data->dtpda_pdesc),
+                                      record(handle->handle, handle->env, rec, data->dtpda_data));
   if (!handle->reply){
     handle->reply = enif_make_list1(handle->env, res);
   } else {
@@ -236,7 +236,7 @@ chewrec(const dtrace_probedata_t *data, const dtrace_recdesc_t *rec, void *arg)
   };
 
 #ifdef DEBUG
-    fprintf(stderr, "chewrec - done\n\r");
+  fprintf(stderr, "chewrec - done\n\r");
 #endif
 
   return (DTRACE_CONSUME_THIS);
@@ -261,9 +261,9 @@ buffered(const dtrace_bufdata_t *bufdata, void *arg)
   }
 
   ERL_NIF_TERM res = enif_make_tuple3(handle->env,
-				      enif_make_atom(handle->env, "printf"),
-				      probe_desc(handle->env, data->dtpda_pdesc),
-				      enif_make_string(handle->env, bufdata->dtbda_buffered, ERL_NIF_LATIN1));
+                                      enif_make_atom(handle->env, "printf"),
+                                      probe_desc(handle->env, data->dtpda_pdesc),
+                                      enif_make_string(handle->env, bufdata->dtbda_buffered, ERL_NIF_LATIN1));
   if (!handle->reply){
     handle->reply = enif_make_list1(handle->env, res);
   } else {
@@ -295,57 +295,57 @@ ranges_quantize(ErlNifEnv* env, dtrace_aggvarid_t varid)
        * beginning of our zeroth bucket.
        */
       min = i > 0 ? DTRACE_QUANTIZE_BUCKETVAL(i - 1) + 1 :
-	INT64_MIN;
+        INT64_MIN;
       max = DTRACE_QUANTIZE_BUCKETVAL(i);
     } else if (i == DTRACE_QUANTIZE_ZEROBUCKET) {
       min = max = 0;
     } else {
       min = DTRACE_QUANTIZE_BUCKETVAL(i);
       max = i < DTRACE_QUANTIZE_NBUCKETS - 1 ?
-	DTRACE_QUANTIZE_BUCKETVAL(i + 1) - 1 :
-	INT64_MAX;
+        DTRACE_QUANTIZE_BUCKETVAL(i + 1) - 1 :
+        INT64_MAX;
     }
 
     ranges[i] = enif_make_tuple2(env,
-				 enif_make_int64(env, min),
-				 enif_make_int64(env, max));
+                                 enif_make_int64(env, min),
+                                 enif_make_int64(env, max));
   }
   return ranges;
 }
 
 ERL_NIF_TERM *
 ranges_lquantize(ErlNifEnv* env,
-		 dtrace_aggvarid_t varid,
-		 const uint64_t arg)
+                 dtrace_aggvarid_t varid,
+                 const uint64_t arg)
 {
-	int64_t min, max;
-	ERL_NIF_TERM *ranges;
+  int64_t min, max;
+  ERL_NIF_TERM *ranges;
 
-	int32_t base;
-	uint16_t step, levels;
-	int i;
+  int32_t base;
+  uint16_t step, levels;
+  int i;
 
-	base = DTRACE_LQUANTIZE_BASE(arg);
-	step = DTRACE_LQUANTIZE_STEP(arg);
-	levels = DTRACE_LQUANTIZE_LEVELS(arg);
+  base = DTRACE_LQUANTIZE_BASE(arg);
+  step = DTRACE_LQUANTIZE_STEP(arg);
+  levels = DTRACE_LQUANTIZE_LEVELS(arg);
 
-	ranges = (ERL_NIF_TERM*) malloc((levels + 2) * sizeof(ERL_NIF_TERM));
+  ranges = (ERL_NIF_TERM*) malloc((levels + 2) * sizeof(ERL_NIF_TERM));
 
-	for (i = 0; i <= levels + 1; i++) {
-		min = i == 0 ? INT64_MIN : base + ((i - 1) * step);
-		max = i > levels ? INT64_MAX : base + (i * step) - 1;
-		ranges[i] = enif_make_tuple2(env,
-					     enif_make_int64(env, min),
-					     enif_make_int64(env, max));
-	}
+  for (i = 0; i <= levels + 1; i++) {
+    min = i == 0 ? INT64_MIN : base + ((i - 1) * step);
+    max = i > levels ? INT64_MAX : base + (i * step) - 1;
+    ranges[i] = enif_make_tuple2(env,
+                                 enif_make_int64(env, min),
+                                 enif_make_int64(env, max));
+  }
 
-	return ranges;
+  return ranges;
 }
 
 ERL_NIF_TERM *
 ranges_llquantize(ErlNifEnv* env,
-		  dtrace_aggvarid_t varid,
-		  const uint64_t arg, int nbuckets)
+                  dtrace_aggvarid_t varid,
+                  const uint64_t arg, int nbuckets)
 {
   int64_t value = 1, next, step;
   ERL_NIF_TERM *ranges;
@@ -363,8 +363,8 @@ ranges_llquantize(ErlNifEnv* env,
   for (order = 0; order < low; order++)
     value *= factor;
   ranges[bucket] = enif_make_tuple2(env,
-				    enif_make_int64(env, 0),
-				    enif_make_int64(env, value - 1));
+                                    enif_make_int64(env, 0),
+                                    enif_make_int64(env, value - 1));
 
   bucket++;
 
@@ -373,8 +373,8 @@ ranges_llquantize(ErlNifEnv* env,
 
   while (order <= high) {
     ranges[bucket] = enif_make_tuple2(env,
-				      enif_make_int64(env, value),
-				      enif_make_int64(env, value + step - 1));
+                                      enif_make_int64(env, value),
+                                      enif_make_int64(env, value + step - 1));
     bucket++;
 
     if ((value += step) != next)
@@ -386,8 +386,8 @@ ranges_llquantize(ErlNifEnv* env,
   }
 
   ranges[bucket] = enif_make_tuple2(env,
-				    enif_make_int64(env, value),
-				    enif_make_int64(env, INT64_MAX));
+                                    enif_make_int64(env, value),
+                                    enif_make_int64(env, INT64_MAX));
 
   return ranges;
 }
@@ -450,7 +450,7 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
 
   case DTRACEAGG_AVG: {
     const int64_t *data = (int64_t *)(agg->dtada_data +
-				      aggrec->dtrd_offset);
+                                      aggrec->dtrd_offset);
 
     res = enif_make_double(env, data[1] / (double)data[0]);
     break;
@@ -459,7 +459,7 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
   case DTRACEAGG_QUANTIZE: {
     ERL_NIF_TERM quantize=0, datum;
     const int64_t *data = (int64_t *)(agg->dtada_data +
-				      aggrec->dtrd_offset);
+                                      aggrec->dtrd_offset);
     ERL_NIF_TERM *ranges;
     int i = 0;
 
@@ -467,16 +467,16 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
 
     for (i = 0; i < DTRACE_QUANTIZE_NBUCKETS; i++) {
       if (!data[i])
-	continue;
+        continue;
 
       datum = enif_make_tuple2(env,
-			       ranges[i],
-			       enif_make_int64(env, data[i]));
+                               ranges[i],
+                               enif_make_int64(env, data[i]));
 
       if (!quantize){
-	quantize = enif_make_list1(env, datum);
+        quantize = enif_make_list1(env, datum);
       } else {
-	quantize = enif_make_list_cell(env, datum, quantize);
+        quantize = enif_make_list_cell(env, datum, quantize);
       };
     }
     free(ranges);
@@ -489,7 +489,7 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
   case DTRACEAGG_LLQUANTIZE: {
     ERL_NIF_TERM lquantize = 0;
     const int64_t *data = (int64_t *)(agg->dtada_data +
-				      aggrec->dtrd_offset);
+                                      aggrec->dtrd_offset);
     ERL_NIF_TERM *ranges, datum;
     int i = 0;
 
@@ -497,21 +497,21 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
     int levels = (aggrec->dtrd_size / sizeof (uint64_t)) - 1;
 
     ranges = (aggrec->dtrd_action == DTRACEAGG_LQUANTIZE ?
-	      ranges_lquantize(env, aggdesc->dtagd_varid, arg) :
-	      ranges_llquantize(env, aggdesc->dtagd_varid, arg, levels));
+              ranges_lquantize(env, aggdesc->dtagd_varid, arg) :
+              ranges_llquantize(env, aggdesc->dtagd_varid, arg, levels));
 
     for (i = 0; i < levels; i++) {
       if (!data[i])
-	continue;
+        continue;
 
       datum = enif_make_tuple2(env,
-			       ranges[i],
-			       enif_make_int64(env, data[i]));
+                               ranges[i],
+                               enif_make_int64(env, data[i]));
 
       if (!lquantize){
-	lquantize = enif_make_list1(env, datum);
+        lquantize = enif_make_list1(env, datum);
       } else {
-	lquantize = enif_make_list_cell(env, datum, lquantize);
+        lquantize = enif_make_list_cell(env, datum, lquantize);
       };
     }
 
@@ -525,9 +525,10 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
   }
 
   res =  enif_make_tuple3(env,
-			  aggrfun,
-			  key,
-			  res);
+                          aggrfun,
+                          key,
+                          res);
+
   if (!handle->reply){
     handle->reply = enif_make_list1(env, res);
   } else {
@@ -539,17 +540,16 @@ static int walk(const dtrace_aggdata_t *agg, void *arg)
 
 static void handle_dtor(ErlNifEnv* env, void* handle) {
   dtrace_close(((dtrace_handle_s*)handle)->handle);
-  enif_release_resource(handle);
 };
 
 static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
   ErlNifResourceFlags flags = (ErlNifResourceFlags)(ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER);
   dtrace_handle = enif_open_resource_type(env,
-					  "erltrace",
-					  "handle",
-					  &handle_dtor,
-					  flags,
-					  0);
+                                          "erltrace",
+                                          "handle",
+                                          &handle_dtor,
+                                          flags,
+                                          0);
   return 0;
 };
 
@@ -558,6 +558,9 @@ static ERL_NIF_TERM open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   dtrace_handle_s *handle;
 
   handle = (dtrace_handle_s *)enif_alloc_resource(dtrace_handle, sizeof(dtrace_handle_s));
+  ERL_NIF_TERM term = enif_make_resource(env, handle);
+
+  enif_release_resource(handle);
   handle->prog = NULL;
   handle->handle = dtrace_open(DTRACE_VERSION, 0, &(handle->err));
 
@@ -573,8 +576,8 @@ static ERL_NIF_TERM open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   }
 
   return  enif_make_tuple2(env,
-			   enif_make_atom(env, "ok"),
-			   enif_make_resource(env, handle));
+                           enif_make_atom(env, "ok"),
+                           term);
 };
 
 static ERL_NIF_TERM setopt_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
@@ -622,8 +625,8 @@ static ERL_NIF_TERM compile_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   }
   if (handle->prog) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "already_running"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "already_running"));
 
   }
 
@@ -648,8 +651,8 @@ static ERL_NIF_TERM go_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
   if (!handle->prog) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "no_prog"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "no_prog"));
   }
   dtrace_go(handle->handle);
   return enif_make_atom(env, "ok");
@@ -668,8 +671,8 @@ static ERL_NIF_TERM stop_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 
   if (!handle->prog) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "no_prog"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "no_prog"));
   }
   dtrace_stop(handle->handle);
   return enif_make_atom(env, "ok");
@@ -688,8 +691,8 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
 
   if (!handle->prog) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "no_prog"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "no_prog"));
   }
 
   handle->env = env;
@@ -699,18 +702,18 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   switch(status) {
   case DTRACE_STATUS_EXITED:  {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "exited"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "exited"));
   };
   case DTRACE_STATUS_FILLED:  {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "filled"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "filled"));
   };
   case DTRACE_STATUS_STOPPED: {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "stopped"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "stopped"));
   };
   case -1: {return dtrace_err(env, handle);};
   }
@@ -740,8 +743,8 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 
   if (!handle->prog) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "no_prog"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "no_prog"));
   }
 
   handle->env = env;
@@ -751,18 +754,18 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   switch(status) {
   case DTRACE_STATUS_EXITED:  {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "exited"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "exited"));
   };
   case DTRACE_STATUS_FILLED:  {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "filled"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "filled"));
   };
   case DTRACE_STATUS_STOPPED: {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "error"),
-			    enif_make_atom(env, "stopped"));
+                            enif_make_atom(env, "error"),
+                            enif_make_atom(env, "stopped"));
   };
   case -1: {return dtrace_err(env, handle);};
   }
@@ -778,8 +781,8 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
 
   if (handle->reply) {
     return enif_make_tuple2(env,
-			    enif_make_atom(env, "ok"),
-			    handle->reply);
+                            enif_make_atom(env, "ok"),
+                            handle->reply);
   };
   return enif_make_atom(env, "ok");
 }
