@@ -36,8 +36,15 @@
 -type dtrace_consume_data() :: [probe()].
 
 init() ->
-    ok = erlang:load_nif("priv/erltrace_drv", 0).
-
+    PrivDir = case code:priv_dir(?MODULE) of
+        {error, _} ->
+            EbinDir = filename:dirname(code:which(?MODULE)),
+            AppPath = filename:dirname(EbinDir),
+            filename:join(AppPath, "priv");
+        Path ->
+            Path
+    end,
+    erlang:load_nif(filename:join(PrivDir, "erltrace_drv"), 0).
 
 -spec script(Script::string()) -> {ok, Handle::dtrace_handle()} |
 		dtrace_error().
