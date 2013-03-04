@@ -109,11 +109,14 @@ static boolean_t valid(const dtrace_recdesc_t *rec)
   }
 }
 
-static ERL_NIF_TERM dtrace_err(ErlNifEnv* env, dtrace_handle_s *handle) {
+static ERL_NIF_TERM dtrace_err(ErlNifEnv* env, dtrace_handle_s *handle, char* locaiton) {
   return enif_make_tuple2(env,
                           enif_make_atom(env, "error"),
-                          enif_make_tuple2(env,
+                          enif_make_tuple3(env,
                                            enif_make_atom(env, "dtrace"),
+                                           enif_make_string(env,
+                                                            locaiton,
+                                                            ERL_NIF_LATIN1),
                                            enif_make_string(env,
                                                             dtrace_errmsg(NULL, handle->err),
                                                             ERL_NIF_LATIN1)));
@@ -565,14 +568,14 @@ static ERL_NIF_TERM open_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
   handle->handle = dtrace_open(DTRACE_VERSION, 0, &(handle->err));
 
   if (handle->handle == NULL) { // if the handle could not be generated.
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "open - init");
   };
 
   dtrace_setopt(handle->handle, "bufsize", "4m");
   dtrace_setopt(handle->handle, "aggsize", "4m");
 
   if (dtrace_handle_buffered(handle->handle, &buffered, handle) == -1) {
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "open - assign buffered walker");
   }
 
   return  enif_make_tuple2(env,
@@ -602,7 +605,7 @@ static ERL_NIF_TERM setopt_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv
   }
 
   if (dtrace_setopt(handle->handle, opt, val) != 0) {
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "setopt failed");
 
   }
   return enif_make_atom(env, "ok");
@@ -632,7 +635,7 @@ static ERL_NIF_TERM compile_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
 
   handle->prog = dtrace_program_strcompile(handle->handle, script, DTRACE_PROBESPEC_NAME, DTRACE_C_ZDEFS, 0, NULL);
   if (handle->prog == NULL) {
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "compail failed");
   };
   dtrace_program_exec(handle->handle, handle->prog, &(handle->info));
   return enif_make_atom(env, "ok");
@@ -715,7 +718,9 @@ static ERL_NIF_TERM consume_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
                             enif_make_atom(env, "error"),
                             enif_make_atom(env, "stopped"));
   };
-  case -1: {return dtrace_err(env, handle);};
+  case -1: {
+    return dtrace_err(env, handle, "consume status -1");
+  };
   }
 
   dtrace_work(handle->handle, NULL, NULL, chewrec, handle);
@@ -767,16 +772,18 @@ static ERL_NIF_TERM walk_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]
                             enif_make_atom(env, "error"),
                             enif_make_atom(env, "stopped"));
   };
-  case -1: {return dtrace_err(env, handle);};
+  case -1: {
+    return dtrace_err(env, handle, "walk status -1");
+  };
   }
 
 
   if (dtrace_aggregate_snap(handle->handle) != 0) {
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "aggregate snap failed.");
   }
 
   if (dtrace_aggregate_walk(handle->handle, walk, handle) != 0) {
-    return dtrace_err(env, handle);
+    return dtrace_err(env, handle, "aggregate walk failed");
   }
 
   if (handle->reply) {
