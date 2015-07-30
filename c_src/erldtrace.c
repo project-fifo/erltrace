@@ -41,6 +41,11 @@
              DTRACE_LLQUANTIZE_NSTEPSHIFT)
 #endif
 
+// Fix for Mac OS's uniqueness
+#if defined(DTRACE_LLQUANTIZE_NSTEPS) && !defined(DTRACE_LLQUANTIZE_NSTEP)
+#define DTRACE_LLQUANTIZE_NSTEP DTRACE_LLQUANTIZE_NSTEPS
+#endif
+
 ErlNifResourceType* dtrace_handle;
 
 typedef struct dtrace_handle_s {
