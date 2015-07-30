@@ -1,6 +1,7 @@
 #include "erl_nif.h"
 #include <string.h>
 #include <dtrace.h>
+// #include <gelf.h>
 
 /*
  * This is a tad unsightly:  if we didn't find the definition of the
@@ -9,6 +10,7 @@
  * on a machine that has llquantize(), even if it was compiled on a machine
  * without the support.
  */
+#define DEBUG
 #ifndef DTRACEAGG_LLQUANTIZE
 
 #define DTRACEAGG_LLQUANTIZE            (DTRACEACT_AGGREGATION + 9)
@@ -103,6 +105,9 @@ static boolean_t valid(const dtrace_recdesc_t *rec)
   case DTRACEACT_USYM:
   case DTRACEACT_UMOD:
   case DTRACEACT_UADDR:
+  case DTRACEACT_STACK:
+  case DTRACEACT_USTACK:
+  case DTRACEACT_JSTACK:
     return (B_TRUE);
   default:
     return (B_FALSE);
@@ -121,6 +126,9 @@ static ERL_NIF_TERM dtrace_err(ErlNifEnv* env, dtrace_handle_s *handle, char* lo
                                                             dtrace_errmsg(NULL, handle->err),
                                                             ERL_NIF_LATIN1)));
 };
+
+
+
 
 static ERL_NIF_TERM
 record(dtrace_hdl_t *dtp, ErlNifEnv* env, const dtrace_recdesc_t *rec, caddr_t addr)
@@ -184,6 +192,14 @@ record(dtrace_hdl_t *dtp, ErlNifEnv* env, const dtrace_recdesc_t *rec, caddr_t a
         *plus = '\0';
     }
     return enif_make_string(env, buf, ERL_NIF_LATIN1);
+
+  case DTRACEACT_STACK:
+    // TODO!
+    return enif_make_string(env, ((const char *)addr), ERL_NIF_LATIN1);
+  case DTRACEACT_USTACK:
+  case DTRACEACT_JSTACK:
+    // TODO!
+    return enif_make_string(env, ((const char *)addr), ERL_NIF_LATIN1);
   default:
     return enif_make_string(env, ((const char *)addr), ERL_NIF_LATIN1);
   }
