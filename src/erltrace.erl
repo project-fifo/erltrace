@@ -46,61 +46,69 @@ init() ->
               end,
     erlang:load_nif(filename:join(PrivDir, "erltrace_drv"), 0).
 
--spec script(Script::string()) -> {ok, Handle::dtrace_handle()} |
-                                  dtrace_error().
+-spec script(Script::string()) ->
+                    {ok, Handle::dtrace_handle()} |
+                    dtrace_error().
 
 script(Script) ->
     {ok, H} = open(),
     ok = compile(H, Script),
     {ok, H}.
 
--spec open() -> {ok, Handle::dtrace_handle()} |
-                dtrace_error().
+-spec open() ->
+                  {ok, Handle::dtrace_handle()} |
+                  dtrace_error().
 open() ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
 -spec setopt(Handle::dtrace_handle(),
              Option::string(),
-             Value::string()) -> ok |
-                                 dtrace_error().
+             Value::string()) ->
+                    ok |
+                    dtrace_error().
 
 setopt(_Handle, _Opt, _Value) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
 
 -spec compile(Handle::dtrace_handle(),
-              Script::string()) -> ok |
-                                   {error, already_running} |
-                                   dtrace_error().
+              Script::string()) ->
+                     ok |
+                     {error, already_running} |
+                     dtrace_error().
 
 compile(_Handle, _Script) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
 
--spec go(Handle::dtrace_handle()) -> ok |
-                                     {error, no_prog}.
+-spec go(Handle::dtrace_handle()) ->
+                ok |
+                {error, no_prog}.
 
 go(_Handle) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
--spec stop(Handle::dtrace_handle()) -> ok |
-                                       {error, no_prog}.
+-spec stop(Handle::dtrace_handle()) ->
+                  ok |
+                  {error, no_prog}.
 
 stop(_Handle) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
--spec consume(Handle::dtrace_handle()) -> ok |
-                                          {ok, dtrace_consume_data()} |
-                                          dtrace_error() |
-                                          {error, no_prog}.
+-spec consume(Handle::dtrace_handle()) ->
+                     ok |
+                     {ok, dtrace_consume_data()} |
+                     dtrace_error() |
+                     {error, no_prog}.
 
 consume(_Handle) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).
 
--spec walk(Handle::dtrace_handle()) -> ok |
-                                       {ok, dtrace_walk_data()} |
-                                       dtrace_error() |
-                                       {error, exited | filled | stopped | no_prog}.
+-spec walk(Handle::dtrace_handle()) ->
+                  ok |
+                  {ok, dtrace_walk_data()} |
+                  dtrace_error() |
+                  {error, exit | filled | stopped | no_prog}.
 
 walk(_Handle) ->
-    exit(nif_library_not_loaded).
+    erlang:nif_error(nif_library_not_loaded).

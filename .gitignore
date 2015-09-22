@@ -3,3 +3,4 @@ ebin
 *.o
 *~
 *.so
+c_src/*.d
