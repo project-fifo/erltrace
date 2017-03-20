@@ -1,5 +1,9 @@
 #include "erl_nif.h"
 #include <string.h>
+#if defined(__FreeBSD__)
+// We need this define from the solaris types.h
+typedef enum { B_FALSE, B_TRUE }        boolean_t;
+#endif
 #include <dtrace.h>
 // #include <gelf.h>
 
