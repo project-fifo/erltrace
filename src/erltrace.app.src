@@ -1,6 +1,6 @@
 {application,erltrace,
              [{description,"erlang dtrace consumer."},
-              {vsn,"0.1.5"},
+              {vsn, git},
               {registered,[]},
               {applications,[kernel,stdlib]},
               {mod,{erltrace_app,[]}},
